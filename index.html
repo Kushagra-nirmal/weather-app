@@ -1,58 +1,349 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>Weather App in JavaScript | Nirmal Sharma</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Linking BoxIcon for Icons -->
-    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+    <title>AETHER // Futuristic Weather Radar</title>
+    <meta name="description" content="Next-generation futuristic weather radar and forecasting platform with real-time telemetry, hourly projections, and atmospheric data.">
+    
+    <!-- Google Fonts: Space Grotesk, Outfit, JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="wrapper">
-        <header>
-            <i class='bx bx-left-arrow-alt'></i>Weather App
+    <!-- Ambient Holographic Glow Backdrops -->
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    <div class="glow-orb orb-3"></div>
+    <div class="grid-overlay"></div>
+
+    <main class="hud-container">
+        <!-- Top HUD Header -->
+        <header class="hud-header glass-card">
+            <div class="brand-zone">
+                <div class="radar-pulse-icon">
+                    <span class="ping"></span>
+                    <i class='bx bx-radar'></i>
+                </div>
+                <div class="brand-text">
+                    <h1 class="brand-title">AETHER <span>// METEORADAR</span></h1>
+                    <p class="brand-subtitle"><span class="status-indicator"></span> SYS.ONLINE &bull; ORBITAL FEED</p>
+                </div>
+            </div>
+
+            <div class="header-controls">
+                <div class="clock-display" id="localClock">
+                    <i class='bx bx-time-five'></i>
+                    <span id="timeString">--:--:--</span>
+                    <span class="tz-badge" id="timezoneBadge">UTC</span>
+                </div>
+
+                <!-- Unit Switcher -->
+                <div class="unit-toggle" id="unitToggle" title="Toggle °C / °F">
+                    <button class="unit-btn active" data-unit="metric" id="celsiusBtn">&deg;C</button>
+                    <button class="unit-btn" data-unit="imperial" id="fahrenheitBtn">&deg;F</button>
+                </div>
+
+                <!-- Sound FX Toggle -->
+                <button class="icon-control-btn" id="soundToggle" title="Toggle Audio FX">
+                    <i class='bx bx-volume-full' id="soundIcon"></i>
+                </button>
+            </div>
         </header>
-        <section class="input-part">
-            <p class="info-txt"></p>
-            <div class="content">
-                <input type="text" spellcheck="false" placeholder="Enter city name" required>
-                <div class="separator"></div>
-                <button>Get Device Location</button>
+
+        <!-- Command & Search Bar -->
+        <section class="command-section glass-card">
+            <div class="search-wrapper">
+                <i class='bx bx-search search-icon'></i>
+                <input type="text" id="cityInput" spellcheck="false" placeholder="Enter target coordinates or city name (e.g. Tokyo, London, Paris)..." autocomplete="off">
+                <button class="action-btn" id="searchBtn" title="Initiate scan">
+                    <span>SCAN</span>
+                    <i class='bx bx-crosshair'></i>
+                </button>
+                <button class="action-btn secondary" id="geoBtn" title="Acquire GPS Position">
+                    <i class='bx bx-current-location'></i>
+                    <span class="btn-text">GPS LOCATE</span>
+                </button>
             </div>
-        </section>
-        <section class="weather-part">
-            <img src="" alt="Weather Icon">
-            <div class="temp">
-                <span class="numb">_</span>
-                <span class="deg">°</span>C
-            </div>
-            <div class="weather">_ _</div>
-            <div class="location">
-                <i class='bx bx-map'></i>
-                <span>_, _</span>
-            </div>
-            <div class="bottom-details">
-              <div class="column feels">
-                  <i class='bx bxs-thermometer'></i>
-                  <div class="details">
-                      <div class="temp">
-                          <span class="numb-2" id="temperature">_</span>
-                          <span class="deg">°</span>C
-                      </div>
-                      <p>Feels like</p>
-                    </div>
-                </div>
-                <div class="column humidity">
-                    <i class='bx bxs-droplet-half'></i>
-                    <div class="details">
-                        <span>_</span>
-                        <p>Humidity</p>
-                    </div>
+
+            <!-- Quick City Chips & History -->
+            <div class="quick-chips-wrapper">
+                <span class="chips-label"><i class='bx bx-globe'></i> QUICK NODES:</span>
+                <div class="chips-container" id="quickChips">
+                    <button class="chip-btn" data-city="Tokyo">Tokyo</button>
+                    <button class="chip-btn" data-city="London">London</button>
+                    <button class="chip-btn" data-city="New York">New York</button>
+                    <button class="chip-btn" data-city="Dubai">Dubai</button>
+                    <button class="chip-btn" data-city="Sydney">Sydney</button>
+                    <button class="chip-btn" data-city="Paris">Paris</button>
                 </div>
             </div>
+            
+            <!-- Status & Notification Banner -->
+            <div class="status-banner" id="statusBanner">
+                <i class='bx bx-loader-alt bx-spin' id="statusIcon"></i>
+                <span id="statusText">Awaiting command input...</span>
+            </div>
         </section>
-    </div>
+
+        <!-- Main Dashboard View -->
+        <div class="dashboard-grid" id="dashboard">
+            <!-- Hero Telemetry Card -->
+            <section class="hero-weather glass-card">
+                <div class="hero-top">
+                    <div class="location-cluster">
+                        <div class="city-name-wrapper">
+                            <i class='bx bxs-map-pin pin-glow'></i>
+                            <h2 class="target-city" id="cityName">New Delhi</h2>
+                            <span class="country-tag" id="countryCode">IN</span>
+                        </div>
+                        <p class="coords-display" id="coordsDisplay">LAT: 28.61 &bull; LON: 77.20</p>
+                    </div>
+
+                    <div class="weather-badge" id="conditionBadge">
+                        <span class="condition-dot"></span>
+                        <span id="weatherMain">Clear Sky</span>
+                    </div>
+                </div>
+
+                <div class="hero-center">
+                    <div class="temp-readout">
+                        <div class="temp-number" id="currentTemp">24</div>
+                        <div class="temp-meta">
+                            <span class="unit-symbol" id="tempUnit">&deg;C</span>
+                            <div class="high-low-cluster">
+                                <span class="temp-hi"><i class='bx bx-up-arrow-alt'></i> <span id="maxTemp">28&deg;</span></span>
+                                <span class="temp-lo"><i class='bx bx-down-arrow-alt'></i> <span id="minTemp">19&deg;</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="hero-icon-display">
+                        <div class="icon-aura"></div>
+                        <img src="icons/clear.svg" alt="Weather Condition" id="mainWeatherIcon" class="weather-hud-icon">
+                        <p class="weather-desc" id="weatherDesc">Clear and sunny</p>
+                    </div>
+                </div>
+
+                <div class="hero-footer">
+                    <div class="footer-chip">
+                        <i class='bx bx-wind'></i>
+                        <span>WIND: <strong id="quickWind">12 km/h</strong></span>
+                    </div>
+                    <div class="footer-chip">
+                        <i class='bx bx-droplet'></i>
+                        <span>HUMIDITY: <strong id="quickHumidity">45%</strong></span>
+                    </div>
+                    <div class="footer-chip">
+                        <i class='bx bx-thermometer'></i>
+                        <span>FEELS LIKE: <strong id="quickFeels">25&deg;C</strong></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Atmospheric Telemetry Grid -->
+            <section class="telemetry-grid">
+                <!-- Wind Matrix -->
+                <div class="telemetry-card glass-card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <i class='bx bx-wind'></i>
+                            <span>WIND VECTOR</span>
+                        </div>
+                        <span class="telemetry-tag">KINETIC</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="metric-row">
+                            <div class="metric-value-wrap">
+                                <span class="metric-big" id="windSpeed">14.2</span>
+                                <span class="metric-unit" id="windUnit">km/h</span>
+                            </div>
+                            <div class="compass-dial">
+                                <div class="compass-pointer" id="compassPointer">
+                                    <i class='bx bx-navigation'></i>
+                                </div>
+                                <span class="direction-label" id="windDirection">NW</span>
+                            </div>
+                        </div>
+                        <div class="sub-metric-row">
+                            <span>WIND GUSTS:</span>
+                            <strong id="windGust">21.5 km/h</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Humidity & Dew Point -->
+                <div class="telemetry-card glass-card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <i class='bx bx-droplet-half'></i>
+                            <span>MOISTURE LEVEL</span>
+                        </div>
+                        <span class="telemetry-tag">HYGRO</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="metric-row">
+                            <div class="metric-value-wrap">
+                                <span class="metric-big" id="humidityVal">62</span>
+                                <span class="metric-unit">%</span>
+                            </div>
+                        </div>
+                        <div class="progress-bar-wrap">
+                            <div class="cyber-progress" id="humidityProgress" style="width: 62%;"></div>
+                        </div>
+                        <div class="sub-metric-row">
+                            <span>DEW POINT:</span>
+                            <strong id="dewPoint">16&deg;C</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Optical Visibility -->
+                <div class="telemetry-card glass-card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <i class='bx bx-show'></i>
+                            <span>VISIBILITY</span>
+                        </div>
+                        <span class="telemetry-tag">OPTIC</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="metric-row">
+                            <div class="metric-value-wrap">
+                                <span class="metric-big" id="visibilityVal">10.0</span>
+                                <span class="metric-unit">km</span>
+                            </div>
+                        </div>
+                        <div class="indicator-badge" id="visibilityStatus">OPTIMAL HORIZON</div>
+                        <div class="sub-metric-row">
+                            <span>ATMOSPHERE:</span>
+                            <strong id="cloudsCoverage">Scattered Clouds (35%)</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Barometric Pressure -->
+                <div class="telemetry-card glass-card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <i class='bx bx-tachometer'></i>
+                            <span>BAROMETER</span>
+                        </div>
+                        <span class="telemetry-tag">PASCAL</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="metric-row">
+                            <div class="metric-value-wrap">
+                                <span class="metric-big" id="pressureVal">1014</span>
+                                <span class="metric-unit">hPa</span>
+                            </div>
+                        </div>
+                        <div class="sub-metric-row">
+                            <span>SEA LEVEL:</span>
+                            <strong id="seaLevelVal">1014 hPa</strong>
+                        </div>
+                        <div class="sub-metric-row">
+                            <span>GROUND LEVEL:</span>
+                            <strong id="grndLevelVal">1011 hPa</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Solar Phase / Sunrise-Sunset -->
+                <div class="telemetry-card glass-card full-span-card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <i class='bx bx-sun'></i>
+                            <span>SOLAR EPHEMERIS</span>
+                        </div>
+                        <span class="telemetry-tag">HELIOS</span>
+                    </div>
+                    <div class="solar-body">
+                        <div class="solar-column">
+                            <i class='bx bx-sunrise solar-icon sunrise-glow'></i>
+                            <div>
+                                <span class="solar-label">SUNRISE</span>
+                                <strong class="solar-time" id="sunriseTime">06:14 AM</strong>
+                            </div>
+                        </div>
+
+                        <div class="solar-arc-track">
+                            <div class="solar-sun-dot" id="sunOrb"></div>
+                            <div class="solar-progress-fill" id="dayProgressFill"></div>
+                            <span class="solar-daylight-text" id="daylightDuration">Daylight: 11h 45m</span>
+                        </div>
+
+                        <div class="solar-column right-align">
+                            <i class='bx bx-sunset solar-icon sunset-glow'></i>
+                            <div>
+                                <span class="solar-label">SUNSET</span>
+                                <strong class="solar-time" id="sunsetTime">05:59 PM</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- 24-Hour Chrono Timeline Forecast -->
+        <section class="forecast-section glass-card">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <i class='bx bx-time'></i>
+                    <h2>CHRONO-PROJECTION // 24-HOUR RADAR</h2>
+                </div>
+                <span class="timeline-hint">3-HOUR INTERVAL TELEMETRY</span>
+            </div>
+            
+            <div class="hourly-timeline" id="hourlyTimeline">
+                <!-- Populated via script.js -->
+            </div>
+        </section>
+
+        <!-- 5-Day Extended Weather Matrix -->
+        <section class="forecast-section glass-card">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <i class='bx bx-calendar'></i>
+                    <h2>5-DAY ORBITAL FORECAST</h2>
+                </div>
+                <span class="timeline-hint">MULTI-CYCLE MODEL</span>
+            </div>
+
+            <div class="daily-forecast-grid" id="dailyForecast">
+                <!-- Populated via script.js -->
+            </div>
+        </section>
+
+        <!-- Search History & Saved Nodes -->
+        <section class="history-section glass-card" id="historySection">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <i class='bx bx-history'></i>
+                    <h2>RECENT TARGET CHIPS</h2>
+                </div>
+                <button class="clear-history-btn" id="clearHistoryBtn">Clear History</button>
+            </div>
+            <div class="chips-container" id="recentHistoryChips">
+                <!-- Dynamically rendered -->
+            </div>
+        </section>
+
+        <!-- Futuristic Footer -->
+        <footer class="hud-footer">
+            <div class="footer-left">
+                <span>AETHER CLIMATE OS v2.5</span> &bull; <span>REAL-TIME METEOROLOGICAL TELEMETRY</span>
+            </div>
+            <div class="footer-right">
+                <span>DATA STREAM: OPENWEATHERMAP API</span> &bull; <span>AUTHOR: NIRMAL SHARMA</span>
+            </div>
+        </footer>
+    </main>
 
     <script src="script.js"></script>
 </body>
